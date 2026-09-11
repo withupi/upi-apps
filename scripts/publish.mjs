@@ -10,7 +10,9 @@
  * main, including pushes with nothing to release.
  *
  * Printing "New tag:" is how changesets/action learns something shipped; it
- * greps stdout for that line to create the GitHub release.
+ * greps stdout for that line, then pushes the matching git tag -- so the tag
+ * has to exist locally first, which `changeset publish` would otherwise have
+ * created.
  */
 
 import { execFileSync } from "node:child_process";
@@ -35,4 +37,12 @@ if (published) {
 }
 
 execFileSync("npm", ["publish", "--access", "public"], { stdio: "inherit" });
+
+// Single-package repos get a bare `v1.2.3`, which is the name the action pushes.
+try {
+  execFileSync("git", ["tag", `v${version}`], { stdio: "pipe" });
+} catch {
+  // Already tagged, e.g. a re-run after a partial failure.
+}
+
 console.log(`New tag: ${name}@${version}`);
