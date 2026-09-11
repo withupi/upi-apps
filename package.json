@@ -1,6 +1,6 @@
 {
   "name": "@withupi/upi-apps",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Detect which UPI app a VPA belongs to, and build deep links that open that specific app instead of whichever one the OS picks.",
   "keywords": [
     "upi",
