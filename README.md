@@ -78,6 +78,32 @@ The plain contested URI is the right thing for a QR: it is scanned from inside
 the payer's chosen app, so no scheme resolution happens, and it is the one form
 every app understands.
 
+This package does not render the QR. Hand the string to whichever encoder suits
+the surface (`qrcode` on the server and web, `react-native-qrcode-svg` in React
+Native, CoreImage on iOS), because no single output format survives all of them.
+Four settings decide whether the result actually scans:
+
+- **Error correction `M`** is the right default. A UPI payload is short, so the
+  extra redundancy of `H` costs you almost no density, but it buys nothing
+  either unless you are covering part of the code. Use `H` if, and only if, you
+  put a logo in the centre.
+- **A quiet zone of at least 2 modules.** Scanners need the blank border to find
+  the code at all. Most libraries default to 4; anything below 2 starts failing
+  against a busy background, and a flush-cropped QR fails everywhere.
+- **Render at 4x the module count or more.** A 256 px image of a 57-module code
+  gives each module 4 px, which survives a phone camera at arm's length. Below
+  that, scanning degrades before it looks wrong to the eye.
+- **A centre logo must sit inside the error-correction budget.** At `H` that is
+  30% of modules, but the safe covered area is nearer 10% of the code's area
+  once you account for the finder patterns, which must stay clear.
+
+The URI is a complete cache key for the image. Everything in it comes from the
+payee, amount and note, so any change that would alter the QR also alters the
+string. That means a rendered QR can be memoized indefinitely, keyed on the
+link, with no invalidation to get wrong. Encoding is pure CPU (matrix
+construction, then a PNG encode and deflate), so this is worth doing anywhere a
+QR is generated per render.
+
 ## API
 
 | Export                                                            | What it does                                                    |
