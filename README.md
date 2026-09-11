@@ -163,6 +163,6 @@ return and keep a QR fallback.
 
 ## License
 
-MIT © Rakesh Potnuru
+MIT © [Publish Studio](https://publishstudio.one)
 
 Extracted from [WithUPI](https://withupi.com), where it runs in production.
