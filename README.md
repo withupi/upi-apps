@@ -135,8 +135,10 @@ Two encoding decisions are deliberate and worth not "fixing":
 ## Detection and linking are separate
 
 The handle map covers every app on NPCI's third-party list, around 50 of them.
-The deep-link table covers about a dozen, because a target is only listed once
-someone has confirmed it on a real device.
+The deep-link table covers fewer, and each entry carries a `confidence`: only
+`established` ones, confirmed on a real device, are returned by
+`getUpiAppTargets`. Entries marked `unverified` carry a `source` recording where
+the value came from, and are returned only with `includeUnverified: true`.
 
 So `detectUpiApp` will happily name an app that `getUpiAppTargets` won't offer.
 That asymmetry is deliberate. Naming the payee's app wrongly is a cosmetic

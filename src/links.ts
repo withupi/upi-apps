@@ -50,6 +50,13 @@ type UpiAppTarget = {
   androidPackage?: string;
   confidence: "established" | "unverified";
   /**
+   * Where the value came from, for anything not confirmed on a device. A Play
+   * Store URL carries its own proof: the `id=` parameter is the package name.
+   * Dropped once an entry is promoted to `established`, since the verification
+   * itself is then the provenance.
+   */
+  source?: string;
+  /**
    * iOS URL scheme *including* the path that precedes the query string, e.g.
    * `tez://upi/pay`. Query params are appended verbatim.
    */
