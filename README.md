@@ -1,0 +1,168 @@
+# @withupi/upi-apps
+
+Work out which UPI app a VPA belongs to, and build links that open **that app**
+on a filled-in payment screen.
+
+```bash
+npm install @withupi/upi-apps
+```
+
+No dependencies. ESM and CJS, with types.
+
+## The problem this solves
+
+`upi://pay?...` is a contested scheme: every UPI app on the device registers it,
+and neither mobile OS lets you say "any UPI app, let the payer choose".
+
+- **iOS** resolves it silently and arbitrarily. In practice the earliest
+  installed claimant wins, so a payer with WhatsApp installed lands in WhatsApp
+  Pay every time, whatever the URL says. There is no chooser, and no API to
+  enumerate or influence the claimants.
+- **Android** shows a chooser, but only until someone taps "Always". After
+  that it is as silent as iOS.
+- **Desktop browsers** have no handler at all, so the navigation strands the tab.
+
+No amount of improving the `upi://` URL fixes this. The fix is to ask the payer
+which app they want, then open that app's own uncontested scheme (iOS) or pin
+the intent to its package (Android). This package holds the table of those
+targets and the builders for both.
+
+## Usage
+
+### Which app is this VPA on?
+
+```ts
+import { detectUpiApp, UPI_APP_LABELS } from "@withupi/upi-apps";
+
+detectUpiApp("someone@ybl"); // "phonepe"
+detectUpiApp("someone@yesg"); // "groww"
+detectUpiApp("someone@notahandle"); // "unknown"
+
+const appId = detectUpiApp(vpa);
+const label = appId === "unknown" ? "UPI" : UPI_APP_LABELS[appId];
+```
+
+Unmapped handles return `"unknown"` rather than a guess. This is shown to
+someone about to send money, so a confidently wrong app name is worse than no
+name at all.
+
+### Open a specific app
+
+```ts
+import { buildUpiAppLink, getUpiAppTargets } from "@withupi/upi-apps";
+
+// Apps you can actually open on this platform, for building a picker.
+const choices = getUpiAppTargets("ios"); // ["googlepay", "phonepe", ...]
+
+const link = buildUpiAppLink({
+  appId: "phonepe",
+  platform: "ios",
+  request: { amount: 250, name: "Rahul Sharma", upiId: "rahul@ybl" },
+});
+// "phonepe://pay?cu=INR&pa=rahul@ybl&pn=Rahul%20Sharma&am=250"
+```
+
+`buildUpiAppLink` returns `undefined` when there is no usable target. Show the
+QR code instead of a button that dead-ends.
+
+### QR codes
+
+```ts
+import { buildUpiUri } from "@withupi/upi-apps";
+
+buildUpiUri({ name: "Rahul Sharma", upiId: "rahul@ybl" });
+// "upi://pay?cu=INR&pa=rahul@ybl&pn=Rahul%20Sharma"
+```
+
+The plain contested URI is the right thing for a QR: it is scanned from inside
+the payer's chosen app, so no scheme resolution happens, and it is the one form
+every app understands.
+
+## API
+
+| Export                                                            | What it does                                                    |
+| ----------------------------------------------------------------- | --------------------------------------------------------------- |
+| `detectUpiApp(vpa)`                                               | `UpiAppId` or `"unknown"`, from the handle after `@`.           |
+| `UPI_APP_LABELS`                                                  | Display name for every `UpiAppId`.                              |
+| `KNOWN_HANDLES`                                                   | Every handle the package recognises.                            |
+| `EXCLUDED_HANDLES`                                                | Handles deliberately left unmapped, and why (see below).        |
+| `getUpiAppTargets(platform, { includeUnverified })`               | Apps openable on `"ios"` / `"android"`; `"other"` returns `[]`. |
+| `buildUpiAppLink({ appId, platform, request, fallbackUrl })`      | Best link for one app, or `undefined`.                          |
+| `buildUpiUri(request)`                                            | The plain `upi://pay` URI, for QR codes.                        |
+| `buildAndroidIntentUri(request, { androidPackage, fallbackUrl })` | An `intent://` URI, optionally pinned to a package.             |
+| `getUpiAppIosScheme(appId)` / `getUpiAppAndroidPackage(appId)`    | Raw target values, for building a native intent yourself.       |
+| `sanitizeTransactionNote(note)`, `UPI_NOTE_MAX_LENGTH`            | Strip characters UPI apps reject from `tn`.                     |
+
+`@withupi/upi-apps/targets.json` exports the raw target table for build-time
+tooling that cannot run the TypeScript. Expo config plugins that generate
+`LSApplicationQueriesSchemes` and `<queries>` read it this way.
+
+Two encoding decisions are deliberate and worth not "fixing":
+
+- **`am` is omitted entirely** when there is no positive amount. An empty `am=`
+  makes some apps drop the whole intent, which the payer sees as a blank screen.
+- **Spaces are `%20` and `@` is left unencoded**, rather than the `+` and `%40`
+  that `URLSearchParams.toString()` produces. Both forms are legal under RFC
+  3986, but UPI apps hand-roll their parsers and every QR in circulation carries
+  the VPA unencoded.
+
+## Detection and linking are separate
+
+The handle map covers every app on NPCI's third-party list, around 50 of them.
+The deep-link table covers about a dozen, because a target is only listed once
+someone has confirmed it on a real device.
+
+So `detectUpiApp` will happily name an app that `getUpiAppTargets` won't offer.
+That asymmetry is deliberate. Naming the payee's app wrongly is a cosmetic
+error. Sending a payer into a link that silently drops the amount is a failed
+payment.
+
+Deep-link entries carry a `confidence` of `established` or `unverified`.
+`getUpiAppTargets` returns only `established` ones unless you pass
+`includeUnverified: true`. To promote one, follow
+[docs/verify-upi-targets.md](docs/verify-upi-targets.md).
+
+## Where the data comes from
+
+Handles come from NPCI's published list of live UPI third-party application
+providers, kept in [`data/`](data/) with a script to refresh it
+(`pnpm sync:npci`). Two handles on that list are deliberately **not** mapped:
+
+- `@icici`, listed under WhatsApp
+- `@axisbank`, listed under T Wallet
+
+Both are the PSP bank's own generic handle. The app does issue VPAs on them,
+but the relationship is not reversible. An `@icici` VPA is far more likely to
+belong to an iMobile user, so mapping it to WhatsApp would be wrong more often
+than right.
+
+A handful of handles that are _not_ on the current list are mapped anyway
+(`@upi` is BHIM, NPCI's own app; `@slc` is slice, now a small finance bank;
+`@fam` and `@mbk` are older handles still held by real users). Leaving the list
+does not invalidate the VPAs already issued.
+
+Deep-link targets are not published anywhere. They are conventions observed
+across Indian merchant SDKs, confirmed by hand, and apps change them between
+releases.
+
+## Contributing
+
+New apps, corrected targets and handle updates are all welcome. See
+[CONTRIBUTING.md](CONTRIBUTING.md). Anything that promotes a target to
+`established` needs a real-device check; there is no way around that one.
+
+## Disclaimer
+
+Not affiliated with, endorsed by, or connected to NPCI or any of the apps
+listed here. App and company names are trademarks of their respective owners
+and are used descriptively, to identify which app a handle or link belongs to.
+
+Deep-link targets are observed conventions, not a published specification. They
+can break whenever any of these apps ships a release. Handle the `undefined`
+return and keep a QR fallback.
+
+## License
+
+MIT © Rakesh Potnuru
+
+Extracted from [WithUPI](https://withupi.com), where it runs in production.

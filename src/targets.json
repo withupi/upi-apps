@@ -1,0 +1,82 @@
+{
+  "$comment": [
+    "Deep-link targets per UPI app, used to bypass the contested `upi://` scheme.",
+    "",
+    "JSON rather than TypeScript so build-time tooling can read the same table the",
+    "app code does. Expo config plugins, for one, are plain CommonJS running at",
+    "prebuild with no transpiler, and they need this to generate",
+    "LSApplicationQueriesSchemes (iOS) and <queries> (Android) -- a second,",
+    "hand-maintained copy of the list would drift.",
+    "",
+    "These values are conventions observed across Indian merchant SDKs, not a",
+    "published spec, and apps change them between releases. `confidence` records",
+    "whether the deep link has been confirmed on a real device; `unverified`",
+    "entries are plausible but untested, and are excluded from getUpiAppTargets",
+    "unless explicitly asked for. See docs/verify-upi-targets.md for how to",
+    "promote one.",
+    "",
+    "This table is intentionally much shorter than the handle map in src/apps.ts.",
+    "Detecting that a payee is on some app costs nothing if it is wrong in an",
+    "unexpected way; sending a payer into a deep link that silently drops the",
+    "amount does. Only add an app here once someone has actually tested it."
+  ],
+  "targets": {
+    "googlepay": {
+      "androidPackage": "com.google.android.apps.nbu.paisa.user",
+      "confidence": "established",
+      "iosScheme": "tez://upi/pay"
+    },
+    "phonepe": {
+      "androidPackage": "com.phonepe.app",
+      "confidence": "established",
+      "iosScheme": "phonepe://pay"
+    },
+    "paytm": {
+      "androidPackage": "net.one97.paytm",
+      "confidence": "established",
+      "iosScheme": "paytmmp://pay"
+    },
+    "bhim": {
+      "androidPackage": "in.org.npci.upiapp",
+      "confidence": "established",
+      "iosScheme": "bhim://upi/pay"
+    },
+    "cred": {
+      "androidPackage": "com.dreamplug.androidapp",
+      "confidence": "established",
+      "iosScheme": "credpay://upi/pay"
+    },
+    "amazonpay": {
+      "androidPackage": "in.amazon.mShop.android.shopping",
+      "confidence": "established"
+    },
+    "mobikwik": {
+      "androidPackage": "com.mobikwik_new",
+      "confidence": "unverified",
+      "iosScheme": "mobikwik://upi/pay"
+    },
+    "fampay": {
+      "androidPackage": "com.fampay.in",
+      "confidence": "unverified",
+      "iosScheme": "in.fampay.app://pay"
+    },
+    "navi": {
+      "androidPackage": "com.naviapp",
+      "confidence": "unverified"
+    },
+    "jio": {
+      "androidPackage": "com.jio.myjio",
+      "confidence": "unverified"
+    },
+    "slice": {
+      "androidPackage": "com.sliceit.app",
+      "confidence": "unverified",
+      "iosScheme": "slicepay://pay"
+    },
+    "supermoney": {
+      "androidPackage": "com.hsb.super",
+      "confidence": "unverified",
+      "iosScheme": "super://pay"
+    }
+  }
+}

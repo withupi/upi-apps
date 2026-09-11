@@ -1,0 +1,70 @@
+{
+  "name": "@withupi/upi-apps",
+  "version": "0.1.0",
+  "description": "Detect which UPI app a VPA belongs to, and build deep links that open that specific app instead of whichever one the OS picks.",
+  "keywords": [
+    "upi",
+    "upi-deeplink",
+    "upi-intent",
+    "vpa",
+    "npci",
+    "payments",
+    "india",
+    "phonepe",
+    "gpay",
+    "paytm"
+  ],
+  "license": "MIT",
+  "author": "Rakesh Potnuru",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/withupi/upi-apps.git"
+  },
+  "homepage": "https://github.com/withupi/upi-apps#readme",
+  "bugs": {
+    "url": "https://github.com/withupi/upi-apps/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./targets.json": "./dist/targets.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "sync:npci": "tsx scripts/import-npci-list.mts",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^22.20.2",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.1.0"
+  },
+  "packageManager": "pnpm@10.0.0"
+}
