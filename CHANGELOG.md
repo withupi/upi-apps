@@ -1,5 +1,18 @@
 # @withupi/upi-apps
 
+## 0.3.0
+
+### Minor Changes
+
+- 2795e61: Promote INDmoney's, Jio's and WhatsApp's iOS schemes to `established`:
+  `indmoney://upi/pay`, `myjio://upi/pay`, `whatsapp://upi/pay` -- all confirmed
+  on a real device after the bare `<name>://pay` shape opened each app but not
+  to a payment screen. Their Android packages are unaffected and stay
+  `unverified`.
+- 2972439: Promote Amazon Pay's and Flipkart's iOS schemes to `established`, both
+  confirmed on a real device: `amazonpay://pay` and `flipkart://pay`. Their
+  Android packages are unaffected and stay `unverified`.
+
 ## 0.2.0
 
 ### Minor Changes
