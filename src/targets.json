@@ -17,8 +17,6 @@
     "default when the field is omitted) are plausible but untested, and are",
     "excluded from getUpiAppTargets unless explicitly asked for. See",
     "docs/verify-upi-targets.md for how to promote one.",
-    "unless explicitly asked for. See docs/verify-upi-targets.md for how to",
-    "promote one.",
     "",
     "Coverage here is much narrower than the handle map in src/apps.ts, and the",
     "gap is not an oversight. A handle is published data; a deep-link target has",
@@ -34,8 +32,7 @@
     "An entry with only an androidPackage is normal and useful: the Android",
     "branch of buildUpiAppLink works from it, while iOS callers fall through to",
     "the QR. Nothing here appears in getUpiAppTargets for a given platform until",
-    "that platform's own confidence is `established`.",
-    "the QR. Nothing here appears in getUpiAppTargets until it is `established`."
+    "that platform's own confidence is `established`."
   ],
   "targets": {
     "googlepay": {
@@ -70,7 +67,9 @@
     },
     "amazonpay": {
       "androidPackage": "in.amazon.mShop.android.shopping",
-      "androidConfidence": "established"
+      "androidConfidence": "established",
+      "iosScheme": "amazonpay://pay",
+      "iosConfidence": "established"
     },
     "mobikwik": {
       "androidPackage": "com.mobikwik_new",
@@ -110,7 +109,9 @@
     },
     "flipkart": {
       "androidPackage": "com.flipkart.android",
-      "androidConfidence": "unverified"
+      "androidConfidence": "unverified",
+      "iosScheme": "flipkart://pay",
+      "iosConfidence": "established"
     },
     "groww": {
       "androidPackage": "com.nextbillion.groww",

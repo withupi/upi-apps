@@ -149,6 +149,26 @@ and rebuild before doubting a package name.
   filled-in payment screen as-is -- `iosConfidence` is `established`, and
   `slice://upi/pay` was never needed. The Android package discrepancy above is
   untouched by this.
+- **Amazon Pay's and Flipkart's iOS schemes are both plain naming-convention
+  guesses that turned out right.** Neither is cited anywhere -- no merchant
+  SDK's scheme list covers either app, unlike the established ones above. We
+  guessed `amazonpay://pay` and `flipkart://pay` (the same `<name>://pay`
+  shape as the rest of this table) with no source beyond the pattern itself,
+  and both **confirmed on a real iPhone (2026-09-12)**, landing on filled-in
+  payment screens. `iosConfidence` is `established` for both; their Android
+  packages are untouched and stay `unverified`.
+- **INDmoney, Jio and WhatsApp all failed the same convention guess.**
+  `indmoney://pay`, `myjio://pay` and `whatsapp://pay` each opened the
+  respective app on a real iPhone (2026-09-12), but none reached a payment
+  screen -- exactly the "app opened, nothing filled in" failure step 2 above
+  exists to catch. None of these is in this table: an app opening is not
+  evidence its scheme is wrong, only that this particular guess isn't the
+  right path. WhatsApp in particular is a poor candidate for this convention
+  at all -- WhatsApp Pay's own UPI flow lives inside a chat, not behind an
+  app-switch deep link the way a standalone UPI app's does, so `whatsapp://`
+  may not accept payment params through any path. Worth retrying INDmoney and
+  Jio with a `/upi/pay` path (the `bhim`/`credpay`/`mobikwik` shape) before
+  concluding the scheme doesn't exist at all.
   - `bhim`: repo lists a bare `bhim://`, we have `bhim://upi/pay` with an extra
     path segment. **Checked on a real device (2026-09-02) -- `bhim://upi/pay`
     is correct as-is**, landing on a filled-in payment screen. The repo's bare

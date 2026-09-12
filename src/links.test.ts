@@ -126,6 +126,9 @@ describe("getUpiAppTargets", () => {
   it("includes the apps we have confirmed on a device", () => {
     expect(getUpiAppTargets("ios")).toContain("phonepe");
     expect(getUpiAppTargets("android")).toContain("googlepay");
+    expect(getUpiAppTargets("ios")).toEqual(
+      expect.arrayContaining(["amazonpay", "flipkart"]),
+    );
   });
 
   it("tracks confidence per platform, not once per app", () => {
@@ -143,7 +146,7 @@ describe("isUpiAppTargetEstablished", () => {
   });
 
   it("is false for a platform with no target at all", () => {
-    expect(isUpiAppTargetEstablished("amazonpay", "ios")).toBe(false);
+    expect(isUpiAppTargetEstablished("navi", "ios")).toBe(false);
   });
 
   it("is false off-platform", () => {
@@ -163,11 +166,11 @@ describe("buildUpiAppLink", () => {
   });
 
   it("returns undefined on iOS when the app has no scheme", () => {
-    // amazonpay has an Android package but no confirmed iOS scheme; the caller
-    // is meant to fall back to the QR rather than show a dead button.
-    expect(getUpiAppIosScheme("amazonpay")).toBeUndefined();
+    // navi has an Android package but no iOS scheme at all; the caller is
+    // meant to fall back to the QR rather than show a dead button.
+    expect(getUpiAppIosScheme("navi")).toBeUndefined();
     expect(
-      buildUpiAppLink({ appId: "amazonpay", platform: "ios", request }),
+      buildUpiAppLink({ appId: "navi", platform: "ios", request }),
     ).toBeUndefined();
   });
 

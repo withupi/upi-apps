@@ -161,12 +161,12 @@ Current status, generated from `src/targets.json` by `pnpm docs:status`:
 
 | App          | Android        | iOS            |
 | ------------ | -------------- | -------------- |
-| Amazon Pay   | ✅ Established | —              |
+| Amazon Pay   | ✅ Established | ✅ Established |
 | BharatPe     | ⚠️ Unverified  | —              |
 | BHIM         | ✅ Established | ✅ Established |
 | CRED         | ✅ Established | ✅ Established |
 | FamPay       | ⚠️ Unverified  | ✅ Established |
-| Flipkart UPI | ⚠️ Unverified  | —              |
+| Flipkart UPI | ⚠️ Unverified  | ✅ Established |
 | Google Pay   | ✅ Established | ✅ Established |
 | Groww        | ⚠️ Unverified  | —              |
 | INDmoney     | ⚠️ Unverified  | —              |
