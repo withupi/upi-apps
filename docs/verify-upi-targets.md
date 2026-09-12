@@ -157,18 +157,19 @@ and rebuild before doubting a package name.
   and both **confirmed on a real iPhone (2026-09-12)**, landing on filled-in
   payment screens. `iosConfidence` is `established` for both; their Android
   packages are untouched and stay `unverified`.
-- **INDmoney, Jio and WhatsApp all failed the same convention guess.**
-  `indmoney://pay`, `myjio://pay` and `whatsapp://pay` each opened the
-  respective app on a real iPhone (2026-09-12), but none reached a payment
-  screen -- exactly the "app opened, nothing filled in" failure step 2 above
-  exists to catch. None of these is in this table: an app opening is not
-  evidence its scheme is wrong, only that this particular guess isn't the
-  right path. WhatsApp in particular is a poor candidate for this convention
-  at all -- WhatsApp Pay's own UPI flow lives inside a chat, not behind an
-  app-switch deep link the way a standalone UPI app's does, so `whatsapp://`
-  may not accept payment params through any path. Worth retrying INDmoney and
-  Jio with a `/upi/pay` path (the `bhim`/`credpay`/`mobikwik` shape) before
-  concluding the scheme doesn't exist at all.
+- **INDmoney, Jio and WhatsApp all needed a `/upi/pay` path, not the bare
+  `<name>://pay` shape.** The first guess -- `indmoney://pay`, `myjio://pay`,
+  `whatsapp://pay` -- opened each app on a real iPhone (2026-09-12) but landed
+  on the home screen or a generic tab, not a payment screen: the app opening
+  is not evidence a scheme is wrong, only that a particular path isn't. The
+  `bhim`/`credpay`/`mobikwik` shape (`<name>://upi/pay`) was tried next and
+  **all three confirmed on a real iPhone (2026-09-12)**, landing on filled-in
+  payment screens: `indmoney://upi/pay`, `myjio://upi/pay`,
+  `whatsapp://upi/pay`. `iosConfidence` is `established` for all three; their
+  Android packages are untouched and stay `unverified`. Worth noting for
+  WhatsApp specifically: its everyday UPI flow is chat-embedded, so it was a
+  reasonable guess that no external app-switch scheme would accept payment
+  params at all -- it does.
   - `bhim`: repo lists a bare `bhim://`, we have `bhim://upi/pay` with an extra
     path segment. **Checked on a real device (2026-09-02) -- `bhim://upi/pay`
     is correct as-is**, landing on a filled-in payment screen. The repo's bare

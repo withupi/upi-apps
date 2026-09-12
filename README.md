@@ -169,8 +169,8 @@ Current status, generated from `src/targets.json` by `pnpm docs:status`:
 | Flipkart UPI | ⚠️ Unverified  | ✅ Established |
 | Google Pay   | ✅ Established | ✅ Established |
 | Groww        | ⚠️ Unverified  | —              |
-| INDmoney     | ⚠️ Unverified  | —              |
-| Jio          | ⚠️ Unverified  | —              |
+| INDmoney     | ⚠️ Unverified  | ✅ Established |
+| Jio          | ⚠️ Unverified  | ✅ Established |
 | Jupiter      | ⚠️ Unverified  | —              |
 | Kiwi         | ⚠️ Unverified  | —              |
 | MobiKwik     | ⚠️ Unverified  | ✅ Established |
@@ -182,7 +182,7 @@ Current status, generated from `src/targets.json` by `pnpm docs:status`:
 | slice        | ⚠️ Unverified  | ✅ Established |
 | Super Money  | ⚠️ Unverified  | ✅ Established |
 | Tata Neu     | ⚠️ Unverified  | —              |
-| WhatsApp     | ⚠️ Unverified  | —              |
+| WhatsApp     | ⚠️ Unverified  | ✅ Established |
 
 <!-- status:end -->
 

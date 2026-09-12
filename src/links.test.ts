@@ -127,7 +127,13 @@ describe("getUpiAppTargets", () => {
     expect(getUpiAppTargets("ios")).toContain("phonepe");
     expect(getUpiAppTargets("android")).toContain("googlepay");
     expect(getUpiAppTargets("ios")).toEqual(
-      expect.arrayContaining(["amazonpay", "flipkart"]),
+      expect.arrayContaining([
+        "amazonpay",
+        "flipkart",
+        "indmoney",
+        "jio",
+        "whatsapp",
+      ]),
     );
   });
 
