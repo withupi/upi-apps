@@ -27,3 +27,5 @@ jobs:
       # The handle map is generated from data/npci-tpap-list.csv. This fails if
       # someone hand-edits one without the other.
       - run: pnpm sync:npci
+      # Same idea for the README's status table against src/targets.json.
+      - run: pnpm docs:status

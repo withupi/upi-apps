@@ -30,7 +30,8 @@ Two rules the script enforces, and a PR should not work around:
   Mapping it produces a confident wrong answer on somebody's payment screen.
 - **Nothing gets removed just because it left the list.** A handle dropping off
   NPCI's current TPAP list does not invalidate the VPAs already issued on it.
-  Removals live in `ADDITIONAL_HANDLE_TO_APP` instead.
+  Handles like this live in `HANDLE_TO_APP`, after the generated region, and
+  the sync script never touches them.
 
 If you are adding an app that has never been listed, say where the handle came
 from: a VPA you hold, the app's own documentation, a support page.
@@ -50,6 +51,10 @@ tested on.
 
 Verification reports for apps you do not maintain are just as useful as code.
 Open an issue with the result and someone will land it.
+
+After changing `src/targets.json`, run `pnpm docs:status --write` to
+regenerate the README's status table -- CI runs `pnpm docs:status` and fails
+if it's stale.
 
 ## Scope
 

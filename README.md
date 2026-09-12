@@ -155,6 +155,37 @@ the same question for one app, which is what a verification UI wants. To
 promote a target, follow
 [docs/verify-upi-targets.md](docs/verify-upi-targets.md).
 
+Current status, generated from `src/targets.json` by `pnpm docs:status`:
+
+<!-- status:start -->
+
+| App          | Android        | iOS            |
+| ------------ | -------------- | -------------- |
+| Amazon Pay   | ✅ Established | —              |
+| BharatPe     | ⚠️ Unverified  | —              |
+| BHIM         | ✅ Established | ✅ Established |
+| CRED         | ✅ Established | ✅ Established |
+| FamPay       | ⚠️ Unverified  | ✅ Established |
+| Flipkart UPI | ⚠️ Unverified  | —              |
+| Google Pay   | ✅ Established | ✅ Established |
+| Groww        | ⚠️ Unverified  | —              |
+| INDmoney     | ⚠️ Unverified  | —              |
+| Jio          | ⚠️ Unverified  | —              |
+| Jupiter      | ⚠️ Unverified  | —              |
+| Kiwi         | ⚠️ Unverified  | —              |
+| MobiKwik     | ⚠️ Unverified  | ✅ Established |
+| Navi         | ⚠️ Unverified  | —              |
+| OneCard      | ⚠️ Unverified  | —              |
+| Paytm        | ✅ Established | ✅ Established |
+| PhonePe      | ✅ Established | ✅ Established |
+| Samsung Pay  | ⚠️ Unverified  | —              |
+| slice        | ⚠️ Unverified  | ✅ Established |
+| Super Money  | ⚠️ Unverified  | ✅ Established |
+| Tata Neu     | ⚠️ Unverified  | —              |
+| WhatsApp     | ⚠️ Unverified  | —              |
+
+<!-- status:end -->
+
 ## Where the data comes from
 
 Handles come from NPCI's published list of live UPI third-party application

@@ -52,7 +52,8 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "sync:npci": "tsx scripts/import-npci-list.mts",
-    "release": "pnpm build && node scripts/publish.mjs"
+    "release": "pnpm build && node scripts/publish.mjs",
+    "docs:status": "tsx scripts/update-readme-status.mts"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.2",
