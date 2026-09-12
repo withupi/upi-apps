@@ -9,9 +9,14 @@
     "hand-maintained copy of the list would drift.",
     "",
     "These values are conventions observed across Indian merchant SDKs, not a",
-    "published spec, and apps change them between releases. `confidence` records",
-    "whether the deep link has been confirmed on a real device; `unverified`",
-    "entries are plausible but untested, and are excluded from getUpiAppTargets",
+    "published spec, and apps change them between releases. `androidConfidence`",
+    "and `iosConfidence` each record whether that platform's own value has been",
+    "confirmed on a real device -- tracked separately because the two are",
+    "verified independently, often on different hardware at different times, and",
+    "one being confirmed says nothing about the other. `unverified` entries (the",
+    "default when the field is omitted) are plausible but untested, and are",
+    "excluded from getUpiAppTargets unless explicitly asked for. See",
+    "docs/verify-upi-targets.md for how to promote one.",
     "unless explicitly asked for. See docs/verify-upi-targets.md for how to",
     "promote one.",
     "",
@@ -20,125 +25,124 @@
     "to be tested. Detecting an app wrongly is cosmetic. Sending a payer into a",
     "link that silently drops the amount is a failed payment.",
     "",
-    "`source` records where an unverified value came from. Play Store URLs are",
-    "self-proving -- the `id=` parameter is the package name -- and are the only",
-    "source used for Android packages here. There is no equivalent for iOS",
-    "schemes: they are published nowhere, and the third-party lists that collect",
-    "them have been wrong about apps in this very table, so no iOS scheme is",
-    "added without a device confirming it.",
+    "Android package names come from Play Store listings, which are self-proving:",
+    "the `id=` parameter in the URL is the package name. There is no equivalent",
+    "for iOS schemes -- they are published nowhere, and the third-party lists that",
+    "collect them have been wrong about apps in this very table, so no iOS scheme",
+    "is added without a device confirming it.",
     "",
     "An entry with only an androidPackage is normal and useful: the Android",
     "branch of buildUpiAppLink works from it, while iOS callers fall through to",
+    "the QR. Nothing here appears in getUpiAppTargets for a given platform until",
+    "that platform's own confidence is `established`.",
     "the QR. Nothing here appears in getUpiAppTargets until it is `established`."
   ],
   "targets": {
     "googlepay": {
       "androidPackage": "com.google.android.apps.nbu.paisa.user",
-      "confidence": "established",
-      "iosScheme": "tez://upi/pay"
+      "androidConfidence": "established",
+      "iosScheme": "tez://upi/pay",
+      "iosConfidence": "established"
     },
     "phonepe": {
       "androidPackage": "com.phonepe.app",
-      "confidence": "established",
-      "iosScheme": "phonepe://pay"
+      "androidConfidence": "established",
+      "iosScheme": "phonepe://pay",
+      "iosConfidence": "established"
     },
     "paytm": {
       "androidPackage": "net.one97.paytm",
-      "confidence": "established",
-      "iosScheme": "paytmmp://pay"
+      "androidConfidence": "established",
+      "iosScheme": "paytmmp://pay",
+      "iosConfidence": "established"
     },
     "bhim": {
       "androidPackage": "in.org.npci.upiapp",
-      "confidence": "established",
-      "iosScheme": "bhim://upi/pay"
+      "androidConfidence": "established",
+      "iosScheme": "bhim://upi/pay",
+      "iosConfidence": "established"
     },
     "cred": {
       "androidPackage": "com.dreamplug.androidapp",
-      "confidence": "established",
-      "iosScheme": "credpay://upi/pay"
+      "androidConfidence": "established",
+      "iosScheme": "credpay://upi/pay",
+      "iosConfidence": "established"
     },
     "amazonpay": {
       "androidPackage": "in.amazon.mShop.android.shopping",
-      "confidence": "established"
+      "androidConfidence": "established"
     },
     "mobikwik": {
       "androidPackage": "com.mobikwik_new",
-      "confidence": "unverified",
-      "iosScheme": "mobikwik://upi/pay"
+      "androidConfidence": "unverified",
+      "iosScheme": "mobikwik://upi/pay",
+      "iosConfidence": "established"
     },
     "fampay": {
       "androidPackage": "com.fampay.in",
-      "confidence": "unverified",
-      "iosScheme": "in.fampay.app://pay"
+      "androidConfidence": "unverified",
+      "iosScheme": "in.fampay.app://pay",
+      "iosConfidence": "established"
     },
     "navi": {
       "androidPackage": "com.naviapp",
-      "confidence": "unverified"
+      "androidConfidence": "unverified"
     },
     "jio": {
       "androidPackage": "com.jio.myjio",
-      "confidence": "unverified"
+      "androidConfidence": "unverified"
     },
     "slice": {
       "androidPackage": "com.sliceit.app",
-      "confidence": "unverified",
-      "iosScheme": "slicepay://pay"
+      "androidConfidence": "unverified",
+      "iosScheme": "slicepay://pay",
+      "iosConfidence": "established"
     },
     "supermoney": {
       "androidPackage": "money.super.payments",
-      "confidence": "unverified",
+      "androidConfidence": "unverified",
       "iosScheme": "super://pay",
-      "source": "https://play.google.com/store/apps/details?id=money.super.payments"
+      "iosConfidence": "established"
     },
     "whatsapp": {
       "androidPackage": "com.whatsapp",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=com.whatsapp"
+      "androidConfidence": "unverified"
     },
     "flipkart": {
       "androidPackage": "com.flipkart.android",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=com.flipkart.android"
+      "androidConfidence": "unverified"
     },
     "groww": {
       "androidPackage": "com.nextbillion.groww",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=com.nextbillion.groww"
+      "androidConfidence": "unverified"
     },
     "jupiter": {
       "androidPackage": "money.jupiter",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=money.jupiter"
+      "androidConfidence": "unverified"
     },
     "tataneu": {
       "androidPackage": "com.tatadigital.tcp",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=com.tatadigital.tcp"
+      "androidConfidence": "unverified"
     },
     "kiwi": {
       "androidPackage": "in.gokiwi.kiwitpap",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=in.gokiwi.kiwitpap"
+      "androidConfidence": "unverified"
     },
     "indmoney": {
       "androidPackage": "in.indwealth",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=in.indwealth"
+      "androidConfidence": "unverified"
     },
     "bharatpe": {
       "androidPackage": "com.postpe.app",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=com.postpe.app"
+      "androidConfidence": "unverified"
     },
     "onecard": {
       "androidPackage": "com.creditcard.onecard",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=com.creditcard.onecard"
+      "androidConfidence": "unverified"
     },
     "samsungpay": {
       "androidPackage": "com.samsung.android.spay",
-      "confidence": "unverified",
-      "source": "https://play.google.com/store/apps/details?id=com.samsung.android.spay"
+      "androidConfidence": "unverified"
     }
   }
 }

@@ -34,6 +34,7 @@ export {
   getUpiAppAndroidPackage,
   getUpiAppIosScheme,
   getUpiAppTargets,
+  isUpiAppTargetEstablished,
   sanitizeTransactionNote,
   UPI_NOTE_MAX_LENGTH,
   type UpiLinkPlatform,

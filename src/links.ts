@@ -41,26 +41,25 @@ export type UpiPaymentRequest = {
  * current platform simply doesn't appear in that platform's picker rather than
  * offering the payer a button that dead-ends.
  *
- * `confidence` records how well-established each target is. "established"
- * entries are safe to ship; "unverified" ones are plausible but untested and
- * are excluded from pickers unless explicitly asked for.
+ * Confidence is tracked *per platform*, not once per app: the iOS scheme and
+ * the Android package are verified independently (see
+ * docs/verify-upi-targets.md), on different hardware, often at different
+ * times, and one being confirmed says nothing about the other. A single
+ * combined flag would let a verified iOS scheme drag along an Android package
+ * nobody has actually launched -- `androidConfidence` and `iosConfidence`
+ * default to `"unverified"` when omitted, and are meaningless on a platform
+ * with no scheme/package to go with them.
  */
 type UpiAppTarget = {
   /** Android application id, used to pin an intent to one app. */
   androidPackage?: string;
-  confidence: "established" | "unverified";
-  /**
-   * Where the value came from, for anything not confirmed on a device. A Play
-   * Store URL carries its own proof: the `id=` parameter is the package name.
-   * Dropped once an entry is promoted to `established`, since the verification
-   * itself is then the provenance.
-   */
-  source?: string;
+  androidConfidence?: "established" | "unverified";
   /**
    * iOS URL scheme *including* the path that precedes the query string, e.g.
    * `tez://upi/pay`. Query params are appended verbatim.
    */
   iosScheme?: string;
+  iosConfidence?: "established" | "unverified";
 };
 
 /**
@@ -98,11 +97,16 @@ export function getUpiAppTargets(
   return (Object.keys(UPI_APP_TARGETS) as UpiAppId[]).filter((appId) => {
     const target = UPI_APP_TARGETS[appId];
     if (!target) return false;
-    if (!includeUnverified && target.confidence !== "established") return false;
 
-    return platform === "ios"
-      ? Boolean(target.iosScheme)
-      : Boolean(target.androidPackage);
+    const scheme =
+      platform === "ios" ? target.iosScheme : target.androidPackage;
+    if (!scheme) return false;
+
+    if (includeUnverified) return true;
+
+    const confidence =
+      platform === "ios" ? target.iosConfidence : target.androidConfidence;
+    return confidence === "established";
   });
 }
 
@@ -112,6 +116,24 @@ export function getUpiAppIosScheme(appId: UpiAppId): string | undefined {
 
 export function getUpiAppAndroidPackage(appId: UpiAppId): string | undefined {
   return UPI_APP_TARGETS[appId]?.androidPackage;
+}
+
+/**
+ * Whether `appId`'s target on `platform` has been confirmed on a real device.
+ *
+ * `false` covers both "unverified" and "no target at all for this platform" --
+ * callers that need to tell those apart should check `getUpiAppIosScheme` /
+ * `getUpiAppAndroidPackage` directly. Exists mainly so a verification UI (see
+ * docs/verify-upi-targets.md) can show its own state without reimplementing
+ * this table's filtering logic.
+ */
+export function isUpiAppTargetEstablished(
+  appId: UpiAppId,
+  platform: UpiLinkPlatform,
+): boolean {
+  if (platform === "other") return false;
+
+  return getUpiAppTargets(platform).includes(appId);
 }
 
 /**

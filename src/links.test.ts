@@ -7,6 +7,7 @@ import {
   getUpiAppAndroidPackage,
   getUpiAppIosScheme,
   getUpiAppTargets,
+  isUpiAppTargetEstablished,
   sanitizeTransactionNote,
   UPI_NOTE_MAX_LENGTH,
 } from "./links";
@@ -125,6 +126,28 @@ describe("getUpiAppTargets", () => {
   it("includes the apps we have confirmed on a device", () => {
     expect(getUpiAppTargets("ios")).toContain("phonepe");
     expect(getUpiAppTargets("android")).toContain("googlepay");
+  });
+
+  it("tracks confidence per platform, not once per app", () => {
+    // mobikwik's iOS scheme is confirmed; its Android package is not -- a
+    // single combined flag would have to pick one and be wrong for the other.
+    expect(getUpiAppTargets("ios")).toContain("mobikwik");
+    expect(getUpiAppTargets("android")).not.toContain("mobikwik");
+  });
+});
+
+describe("isUpiAppTargetEstablished", () => {
+  it("agrees with getUpiAppTargets for a platform-specific promotion", () => {
+    expect(isUpiAppTargetEstablished("mobikwik", "ios")).toBe(true);
+    expect(isUpiAppTargetEstablished("mobikwik", "android")).toBe(false);
+  });
+
+  it("is false for a platform with no target at all", () => {
+    expect(isUpiAppTargetEstablished("amazonpay", "ios")).toBe(false);
+  });
+
+  it("is false off-platform", () => {
+    expect(isUpiAppTargetEstablished("phonepe", "other")).toBe(false);
   });
 });
 

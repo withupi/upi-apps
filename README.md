@@ -113,6 +113,7 @@ QR is generated per render.
 | `KNOWN_HANDLES`                                                   | Every handle the package recognises.                            |
 | `EXCLUDED_HANDLES`                                                | Handles deliberately left unmapped, and why (see below).        |
 | `getUpiAppTargets(platform, { includeUnverified })`               | Apps openable on `"ios"` / `"android"`; `"other"` returns `[]`. |
+| `isUpiAppTargetEstablished(appId, platform)`                      | Whether one app's target on that platform is confirmed.         |
 | `buildUpiAppLink({ appId, platform, request, fallbackUrl })`      | Best link for one app, or `undefined`.                          |
 | `buildUpiUri(request)`                                            | The plain `upi://pay` URI, for QR codes.                        |
 | `buildAndroidIntentUri(request, { androidPackage, fallbackUrl })` | An `intent://` URI, optionally pinned to a package.             |
@@ -135,19 +136,23 @@ Two encoding decisions are deliberate and worth not "fixing":
 ## Detection and linking are separate
 
 The handle map covers every app on NPCI's third-party list, around 50 of them.
-The deep-link table covers fewer, and each entry carries a `confidence`: only
-`established` ones, confirmed on a real device, are returned by
-`getUpiAppTargets`. Entries marked `unverified` carry a `source` recording where
-the value came from, and are returned only with `includeUnverified: true`.
+The deep-link table covers fewer, because a target has to be tested before it's
+listed, not just named.
 
 So `detectUpiApp` will happily name an app that `getUpiAppTargets` won't offer.
 That asymmetry is deliberate. Naming the payee's app wrongly is a cosmetic
 error. Sending a payer into a link that silently drops the amount is a failed
 payment.
 
-Deep-link entries carry a `confidence` of `established` or `unverified`.
-`getUpiAppTargets` returns only `established` ones unless you pass
-`includeUnverified: true`. To promote one, follow
+Each target tracks confidence per platform, as `androidConfidence` and
+`iosConfidence`, not once per app: the two are verified independently, often on
+different hardware, and one being confirmed says nothing about the other. An
+app can be `established` on iOS and `unverified` on Android at the same time --
+MobiKwik is exactly this today. `getUpiAppTargets` returns only `established`
+targets for the platform you ask about, unless you pass
+`includeUnverified: true`. `isUpiAppTargetEstablished(appId, platform)` answers
+the same question for one app, which is what a verification UI wants. To
+promote a target, follow
 [docs/verify-upi-targets.md](docs/verify-upi-targets.md).
 
 ## Where the data comes from

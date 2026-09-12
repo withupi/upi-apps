@@ -9,10 +9,14 @@ Indian merchant SDKs, and apps do change them between releases. So the table
 needs re-checking — after a major release of any listed app, and before adding
 anything new.
 
-Entries are marked `"confidence": "established"` or `"unverified"`. Only
-`established` entries appear in the payment app picker; `unverified` ones are
-parked in the table so this procedure has something concrete to test. Promote an
-entry only after it passes on a real device.
+Each platform an app has a value for is marked `"androidConfidence"` and/or
+`"iosConfidence"`, each `"established"` or `"unverified"` -- tracked
+separately because the two are verified independently, often on different
+hardware, and confirming one says nothing about the other. Only `established`
+values appear in the payment app picker for that platform; `unverified` ones
+are parked in the table so this procedure has something concrete to test.
+Promote a platform's value only after it passes on a real device -- the other
+platform, if present, keeps its own state.
 
 ## What "passes" means
 
@@ -87,20 +91,28 @@ Package names also have to be declared in your manifest's `<queries>` (Android
 though `adb` succeeds. If you generate `<queries>` from this table, regenerate
 and rebuild before doubting a package name.
 
-## Open questions as of 2026-09-02
+## Open questions as of 2026-09-12
 
 - **Super Money's iOS scheme is confirmed**: `super://pay?pa=...&pn=...&am=...&cu=INR`
-  lands on a filled-in payment screen (real device, 2026-09-02). Note it is
-  `super://`, not `supermoney://` — `supermoney://pay` opens the app but drops
-  every param and lands on the home screen, which looks like success from the
+  lands on a filled-in payment screen (real device, first checked 2026-09-02,
+  re-confirmed 2026-09-12 via the in-app tester). Note it is `super://`, not
+  `supermoney://` — `supermoney://pay` opens the app but drops every param and
+  lands on the home screen, which looks like success from the
   scheme-registration side (`canOpenURL` returns true for it too, since the app
   claims that scheme as well) but silently fails the actual payment. That gap
   is exactly why step 2 above (confirm the _filled-in screen_, not just that
   the app opened) isn't optional.
-- **Super Money's Android package is still unverified** (`com.hsb.super`,
-  corrected from an earlier guess against
-  [shambu2k/upi-intent](https://github.com/shambu2k/upi-intent) -- someone with
-  an Android device should confirm it the same way).
+- **Super Money's Android package is `money.super.payments`**, corrected from
+  an earlier guess (`com.hsb.super`, against
+  [shambu2k/upi-intent](https://github.com/shambu2k/upi-intent)) against its
+  Play Store listing -- "super.money — UPI by Flipkart". That listing proves
+  the package exists, not that it handles a UPI intent, so it's still
+  `androidConfidence: "unverified"`. Someone with an Android device should
+  run it through the procedure above.
+- **MobiKwik's iOS scheme (`mobikwik://upi/pay`) confirmed on a real iPhone
+  (2026-09-12)**, landing on a filled-in payment screen -- `iosConfidence` is
+  `established`. Its Android package (`com.mobikwik_new`) is untouched by this
+  and stays `unverified`.
 - **`fampay`'s Android package went briefly wrong and back.** shambu2k/upi-intent
   lists `in.fampay.app` as FamPay's _Android package_; we changed to that from
   `com.fampay.in` on its word, then a user report ("FamPay opens but nothing
@@ -114,26 +126,29 @@ and rebuild before doubting a package name.
   `LSApplicationQueriesSchemes` entry, which lines up. We've now added
   `"iosScheme": "in.fampay.app://pay"` on that basis -- the bare scheme has a
   real citation, the `/pay` path appended after it is still our own
-  convention-following guess, unconfirmed. This is also the concrete lesson
-  from this whole episode: shambu2k/upi-intent has now been wrong on FamPay's
-  Android package once and is unverified on everything else it lists here --
-  treat every value from it as a candidate to test, not a fact.
-  **Someone with FamApp on an iPhone needs to confirm `in.fampay.app://pay`
-  before this is trustworthy.**
+  convention-following guess. This is also the concrete lesson from this whole
+  episode: shambu2k/upi-intent has now been wrong on FamPay's Android package
+  once and is unverified on everything else it lists here -- treat every value
+  from it as a candidate to test, not a fact.
+  **`in.fampay.app://pay` confirmed on a real iPhone (2026-09-12)**, landing on
+  a filled-in payment screen -- `iosConfidence` is `established`. The Android
+  package is still just the reverted, Play-Store-confirmed value above,
+  unverified as a working UPI intent.
 - **`slice`'s Android package** (`com.sliceit.app` vs. shambu2k's
   `com.slice.pay`) is still an open, un-actioned discrepancy -- not touched,
   precisely because the fampay episode above is a reason to distrust that
   source rather than a reason to trust it more. Needs an Android device to
   settle either way.
-- **`slice`'s iOS scheme** (`slicepay://pay`, just added) is the weakest-sourced
-  entry in this table. It traces back to a search-engine summary that claimed
-  Slice uses `slice://upi/pay`, but none of the actual pages behind that
-  summary (Razorpay's iOS UPI-intent doc, a UPI deep-linking blog post) contain
-  that string when fetched directly -- it reads like inference, not a citation.
-  `slicepay://pay` is instead built from shambu2k's bare `slicepay://` plus our
-  usual `/pay` convention, which is no more solid. If `slicepay://pay` doesn't
-  land on a filled-in screen, `slice://upi/pay` is the next thing to try.
-  **Needs a real iPhone with Slice installed before it means anything.**
+- **`slice`'s iOS scheme** (`slicepay://pay`) traced back to the weakest source
+  in this table -- a search-engine summary claiming Slice uses `slice://upi/pay`,
+  which none of the actual pages behind that summary (Razorpay's iOS
+  UPI-intent doc, a UPI deep-linking blog post) contain when fetched directly.
+  `slicepay://pay` came from shambu2k's bare `slicepay://` plus our usual
+  `/pay` convention instead, which was no more solid on its own.
+  **Confirmed on a real iPhone (2026-09-12)**: `slicepay://pay` lands on a
+  filled-in payment screen as-is -- `iosConfidence` is `established`, and
+  `slice://upi/pay` was never needed. The Android package discrepancy above is
+  untouched by this.
   - `bhim`: repo lists a bare `bhim://`, we have `bhim://upi/pay` with an extra
     path segment. **Checked on a real device (2026-09-02) -- `bhim://upi/pay`
     is correct as-is**, landing on a filled-in payment screen. The repo's bare
@@ -146,7 +161,9 @@ and rebuild before doubting a package name.
 
 1. Make sure the app has an id in `src/apps.ts` -- see CONTRIBUTING.md if it is
    new to the package entirely.
-2. Add the target to `src/targets.json` as `"confidence": "unverified"`.
+2. Add the target to `src/targets.json` with `"androidConfidence"` and/or
+   `"iosConfidence"` set to `"unverified"`, for whichever platform(s) you have
+   a value for.
 3. Regenerate whatever your app derives from the table (Info.plist schemes,
    manifest `<queries>`) and rebuild -- neither is read at runtime.
 4. Verify per the above, then promote to `"established"`.
