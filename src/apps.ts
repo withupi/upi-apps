@@ -147,15 +147,17 @@ export const UPI_APP_LABELS: Record<UpiAppId, string> = {
 };
 
 /**
- * Handles taken straight from NPCI's third-party app list, minus
- * EXCLUDED_HANDLES.
- *
- * Regenerate with `pnpm sync:npci --write` after dropping a newer export of
- * the list into `data/npci-tpap-list.csv`; the region markers below are what
- * that script rewrites, so don't hand-edit inside them.
+ * Every handle this package resolves. Most of it -- the `#region` block below
+ * -- comes straight from NPCI's third-party app list, minus EXCLUDED_HANDLES;
+ * regenerate that part with `pnpm sync:npci --write` after dropping a newer
+ * export of the list into `data/npci-tpap-list.csv`. The region markers are
+ * what that script rewrites, so don't hand-edit inside them, and don't move
+ * entries in or out of the region by hand either -- the handles after it are
+ * deliberately not NPCI-sourced (see the comment there) and the script would
+ * otherwise have no way to tell the two apart.
  */
-// #region npci-generated
-const NPCI_HANDLE_TO_APP: Record<string, UpiAppId> = {
+const HANDLE_TO_APP: Record<string, UpiAppId> = {
+  // #region npci-generated
   abcdicici: "adityabirla",
   abfspay: "bajajfinserv",
   apl: "amazonpay",
@@ -221,38 +223,30 @@ const NPCI_HANDLE_TO_APP: Record<string, UpiAppId> = {
   yesg: "groww",
   yespop: "pop",
   ztrbl: "zet",
-};
-// #endregion
+  // #endregion
 
-/**
- * Handles that work but aren't on NPCI's current third-party list.
- *
- * Being absent from that list doesn't make a handle dead -- it means the app
- * isn't a live TPAP *today*, which is a different claim:
- *
- * - `upi` is BHIM, NPCI's own app, so it was never a third-party entry.
- * - `slc` is slice, which became a small finance bank and left the list.
- * - `jio` and `okbizaxis` (Google Pay for Business) are issued outside the
- *   consumer-app listing.
- * - `fam` and `mbk` are earlier handles for apps that now also appear under
- *   newer ones (`yesfam`, `ikwik`/`mbkns`). VPAs issued on them are still in
- *   circulation and still resolve.
- *
- * Removing any of these would turn a correct answer into "unknown" for people
- * who already hold those VPAs, which is a regression with nothing gained.
- */
-const ADDITIONAL_HANDLE_TO_APP: Record<string, UpiAppId> = {
+  // Handles below are deliberately not NPCI-sourced, and `sync:npci` never
+  // touches them. Being absent from NPCI's current list doesn't make a handle
+  // dead -- it means the app isn't a live TPAP *today*, which is a different
+  // claim:
+  //
+  // - `upi` is BHIM, NPCI's own app, so it was never a third-party entry.
+  // - `slc` is slice, which became a small finance bank and left the list.
+  // - `jio` and `okbizaxis` (Google Pay for Business) are issued outside the
+  //   consumer-app listing.
+  // - `fam` and `mbk` are earlier handles for apps that now also appear under
+  //   newer ones (`yesfam`, `ikwik`/`mbkns`). VPAs issued on them are still in
+  //   circulation and still resolve.
+  //
+  // Removing any of these would turn a correct answer into "unknown" for
+  // people who already hold those VPAs, which is a regression with nothing
+  // gained.
   fam: "fampay",
   jio: "jio",
   mbk: "mobikwik",
   okbizaxis: "googlepay",
   slc: "slice",
   upi: "bhim",
-};
-
-const HANDLE_TO_APP: Record<string, UpiAppId> = {
-  ...NPCI_HANDLE_TO_APP,
-  ...ADDITIONAL_HANDLE_TO_APP,
 };
 
 /** Every handle this package recognises, for tests and tooling. */

@@ -8,9 +8,9 @@
  *   pnpm sync:npci           # print the diff
  *   pnpm sync:npci --write   # apply it to src/apps.ts
  *
- * Only the `#region npci-generated` block in src/apps.ts is touched. Handles
- * that aren't on NPCI's list live in ADDITIONAL_HANDLE_TO_APP below it and are
- * never removed by this script -- see the comment there for why.
+ * Only the `#region npci-generated` block inside HANDLE_TO_APP in src/apps.ts
+ * is touched. Handles that aren't on NPCI's list live after that region and
+ * are never removed by this script -- see the comment there for why.
  */
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -91,7 +91,7 @@ const csvPath = new URL("data/npci-tpap-list.csv", root);
 const appsPath = new URL("src/apps.ts", root);
 
 const REGION =
-  /(\/\/ #region npci-generated\nconst NPCI_HANDLE_TO_APP: Record<string, UpiAppId> = \{\n)([\s\S]*?)(\};\n\/\/ #endregion)/;
+  /(\/\/ #region npci-generated\n)([\s\S]*?)(\n {2}\/\/ #endregion)/;
 
 function parseCsv(text: string): Record<string, string>[] {
   const [header, ...lines] = text.trim().split(/\r?\n/);
