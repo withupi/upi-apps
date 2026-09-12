@@ -147,9 +147,9 @@ payment.
 Each target tracks confidence per platform, as `androidConfidence` and
 `iosConfidence`, not once per app: the two are verified independently, often on
 different hardware, and one being confirmed says nothing about the other. An
-app can be `established` on iOS and `unverified` on Android at the same time --
-MobiKwik is exactly this today. `getUpiAppTargets` returns only `established`
-targets for the platform you ask about, unless you pass
+app can be `established` on iOS and `unverified` on Android at the same time.
+`getUpiAppTargets` returns only `established` targets for the platform you ask
+about, unless you pass
 `includeUnverified: true`. `isUpiAppTargetEstablished(appId, platform)` answers
 the same question for one app, which is what a verification UI wants. To
 promote a target, follow
@@ -189,10 +189,6 @@ New apps, corrected targets and handle updates are all welcome. See
 Not affiliated with, endorsed by, or connected to NPCI or any of the apps
 listed here. App and company names are trademarks of their respective owners
 and are used descriptively, to identify which app a handle or link belongs to.
-
-Deep-link targets are observed conventions, not a published specification. They
-can break whenever any of these apps ships a release. Handle the `undefined`
-return and keep a QR fallback.
 
 ## License
 
