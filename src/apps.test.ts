@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   detectUpiApp,
   EXCLUDED_HANDLES,
+  getUpiHandleInfo,
   KNOWN_HANDLES,
   UPI_APP_LABELS,
+  UPI_HANDLES,
   type UpiAppId,
 } from "./apps";
 import targetsData from "./targets.json";
@@ -77,5 +79,71 @@ describe("table integrity", () => {
     for (const appId of Object.keys(targetsData.targets)) {
       expect(UPI_APP_LABELS[appId as UpiAppId], appId).toBeTruthy();
     }
+  });
+});
+
+describe("getUpiHandleInfo", () => {
+  it("accepts a VPA, @handle or bare handle", () => {
+    const expected = {
+      handle: "mbkns",
+      appId: "mobikwik",
+      pspBank: "NSDL Payments Bank",
+      goLive: "2025-09",
+    };
+    expect(getUpiHandleInfo("98xxxx12@mbkns")).toEqual(expected);
+    expect(getUpiHandleInfo("@MBKNS")).toEqual(expected);
+    expect(getUpiHandleInfo(" mbkns ")).toEqual(expected);
+  });
+
+  it("explains excluded handles without naming an app", () => {
+    expect(getUpiHandleInfo("someone@icici")).toEqual({
+      handle: "icici",
+      appId: null,
+      pspBank: "ICICI Bank",
+      goLive: "2020-11",
+    });
+  });
+
+  it("has no PSP for handles NPCI doesn't list", () => {
+    expect(getUpiHandleInfo("upi")).toMatchObject({
+      appId: "bhim",
+      pspBank: null,
+      goLive: null,
+    });
+  });
+
+  it("returns null for unknown or empty input", () => {
+    expect(getUpiHandleInfo("someone@notahandle")).toBeNull();
+    expect(getUpiHandleInfo("")).toBeNull();
+    expect(getUpiHandleInfo("trailing@")).toBeNull();
+  });
+});
+
+describe("UPI_HANDLES", () => {
+  it("covers every known and excluded handle once", () => {
+    const handles = UPI_HANDLES.map((h) => h.handle);
+    expect(new Set(handles).size).toBe(handles.length);
+    expect(handles.sort()).toEqual(
+      [...KNOWN_HANDLES, ...EXCLUDED_HANDLES].sort(),
+    );
+  });
+
+  it("agrees with detectUpiApp", () => {
+    for (const info of UPI_HANDLES) {
+      const detected = detectUpiApp(`someone@${info.handle}`);
+      expect(info.appId ?? "unknown", info.handle).toBe(detected);
+    }
+  });
+
+  it("gives every NPCI-listed handle a bank and an ISO month", () => {
+    for (const info of UPI_HANDLES) {
+      if (info.pspBank === null) continue;
+      expect(info.goLive, info.handle).toMatch(/^\d{4}-(0[1-9]|1[0-2])$/);
+    }
+    // Only the six hand-kept, non-NPCI handles lack a bank.
+    const withoutBank = UPI_HANDLES.filter((h) => h.pspBank === null);
+    expect(withoutBank.map((h) => h.handle).sort()).toEqual(
+      ["fam", "jio", "mbk", "okbizaxis", "slc", "upi"].sort(),
+    );
   });
 });

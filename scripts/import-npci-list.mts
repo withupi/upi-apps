@@ -92,6 +92,44 @@ const appsPath = new URL("src/apps.ts", root);
 
 const REGION =
   /(\/\/ #region npci-generated\n)([\s\S]*?)(\n {2}\/\/ #endregion)/;
+const PSP_REGION =
+  /(\/\/ #region npci-psp-generated\n)([\s\S]*?)( {2}\/\/ #endregion)/;
+
+/**
+ * NPCI's bank spellings -> the bank's own name. NPCI mixes "ICICI" with
+ * "ICICI Bank" in the same sheet and shortens NSDL Payments Bank to "NSDL
+ * Bank". Anything not listed here passes through unchanged.
+ */
+const PSP_BANK_NAMES: Record<string, string> = {
+  ICICI: "ICICI Bank",
+  "NSDL Bank": "NSDL Payments Bank",
+  "The Cosmos Co-Operative Bank Ltd.": "Cosmos Co-operative Bank",
+};
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+/** "August-2016" -> "2016-08". A shape we don't recognise is a hard error. */
+function toIsoMonth(goLive: string, handle: string): string {
+  const match = goLive.match(/^([A-Za-z]+)-(\d{4})$/);
+  const month = match ? MONTHS.indexOf(match[1]!) + 1 : 0;
+  if (!match || month === 0) {
+    throw new Error(`Unrecognised goLive "${goLive}" for @${handle}`);
+  }
+  return `${match[2]}-${String(month).padStart(2, "0")}`;
+}
 
 function parseCsv(text: string): Record<string, string>[] {
   const [header, ...lines] = text.trim().split(/\r?\n/);
@@ -120,11 +158,20 @@ function parseCurrentRegion(source: string): Record<string, string> {
 const rows = parseCsv(await readFile(fileURLToPath(csvPath), "utf8"));
 const excluded = new Set(EXCLUDED_HANDLES);
 const next: Record<string, UpiAppId> = {};
+const nextPsp: Record<string, [string, string]> = {};
 const skipped: string[] = [];
 const unmapped = new Set<string>();
 
-for (const { tpap, handle } of rows) {
+for (const { tpap, handle, pspBank, goLive } of rows) {
   if (!tpap || !handle) continue;
+  // Recorded before the app checks below: an excluded handle has no app, but
+  // it still has a bank, and that is worth saying.
+  if (pspBank && goLive && (excluded.has(handle) || !SKIPPED_TPAPS.has(tpap))) {
+    nextPsp[handle] = [
+      PSP_BANK_NAMES[pspBank] ?? pspBank,
+      toIsoMonth(goLive, handle),
+    ];
+  }
   if (SKIPPED_TPAPS.has(tpap)) {
     skipped.push(`@${handle} (${tpap}) -- every listed handle is bank-generic`);
     continue;
@@ -191,7 +238,21 @@ report(
 );
 report("Skipped", skipped);
 
-if (added.length + removed.length + changed.length === 0) {
+const pspBody = Object.keys(nextPsp)
+  .sort()
+  .map((handle) => {
+    const [bank, goLive] = nextPsp[handle]!;
+    return `  ${handle}: ["${bank}", "${goLive}"],\n`;
+  })
+  .join("");
+const pspMatch = source.match(PSP_REGION);
+if (!pspMatch) {
+  throw new Error("npci-psp-generated region not found in src/apps.ts");
+}
+const pspChanged = pspMatch[2] !== pspBody;
+if (pspChanged) console.log("\nPSP bank / go-live table changed");
+
+if (added.length + removed.length + changed.length === 0 && !pspChanged) {
   console.log("\nUp to date: no changes from the list.");
   process.exit(0);
 }
@@ -208,11 +269,17 @@ const body = Object.keys(next)
 
 await writeFile(
   fileURLToPath(appsPath),
-  source.replace(
-    REGION,
-    (_match: string, open: string, _body: string, close: string) =>
-      open + body + close,
-  ),
+  source
+    .replace(
+      REGION,
+      (_match: string, open: string, _body: string, close: string) =>
+        open + body + close,
+    )
+    .replace(
+      PSP_REGION,
+      (_match: string, open: string, _body: string, close: string) =>
+        open + pspBody + close,
+    ),
 );
 
 console.log("\nWrote src/apps.ts. Review the diff, then add a changeset.");

@@ -223,6 +223,7 @@ const HANDLE_TO_APP: Record<string, UpiAppId> = {
   yesg: "groww",
   yespop: "pop",
   ztrbl: "zet",
+
   // #endregion
 
   // Handles below are deliberately not NPCI-sourced, and `sync:npci` never
@@ -268,4 +269,138 @@ export function detectUpiApp(upiId: string): UpiAppId | "unknown" {
     .trim()
     .toLowerCase();
   return HANDLE_TO_APP[handle] ?? "unknown";
+}
+
+/**
+ * Who issues a handle, from the same NPCI list as the region above: the PSP
+ * bank that runs it for the app, and the month NPCI lists it as going live
+ * (`YYYY-MM`).
+ *
+ * Kept apart from HANDLE_TO_APP because it covers a different set: it includes
+ * EXCLUDED_HANDLES (they still have a bank, just not one app), and it can't
+ * cover the non-NPCI handles listed after the region above, which have no
+ * published PSP. Bank names are normalised from NPCI's spelling, which mixes
+ * "ICICI" with "ICICI Bank" and calls NSDL Payments Bank "NSDL Bank". Same
+ * rules as above: `pnpm sync:npci --write` rewrites the region.
+ */
+const HANDLE_PSP: Record<string, readonly [pspBank: string, goLive: string]> = {
+  // #region npci-psp-generated
+  abcdicici: ["ICICI Bank", "2024-04"],
+  abfspay: ["Axis Bank", "2021-03"],
+  apl: ["Axis Bank", "2019-01"],
+  axisb: ["Axis Bank", "2019-04"],
+  axisbank: ["Axis Bank", "2024-11"],
+  axl: ["Axis Bank", "2016-08"],
+  bpunity: ["Unity Small Finance Bank", "2024-08"],
+  cqaxis: ["Axis Bank", "2026-06"],
+  fkaxis: ["Axis Bank", "2024-03"],
+  freoicici: ["ICICI Bank", "2024-08"],
+  fvaxis: ["Axis Bank", "2025-12"],
+  goaxb: ["Axis Bank", "2023-05"],
+  gsaxis: ["Axis Bank", "2026-07"],
+  hfaxis: ["Axis Bank", "2025-12"],
+  ibl: ["ICICI Bank", "2016-08"],
+  icici: ["ICICI Bank", "2020-11"],
+  ikwik: ["HDFC Bank", "2018-05"],
+  inhdfc: ["HDFC Bank", "2024-10"],
+  jarunity: ["Unity Small Finance Bank", "2025-05"],
+  jpyes: ["Yes Bank", "2025-12"],
+  jupiteraxis: ["Axis Bank", "2021-06"],
+  kbaxis: ["Axis Bank", "2025-07"],
+  kphdfc: ["HDFC Bank", "2024-09"],
+  lxaxis: ["Axis Bank", "2025-09"],
+  mbkns: ["NSDL Payments Bank", "2025-09"],
+  mlyes: ["Yes Bank", "2026-04"],
+  mvhdfc: ["HDFC Bank", "2024-10"],
+  naviaxis: ["Axis Bank", "2023-08"],
+  nvdcb: ["DCB Bank", "2025-12"],
+  nyes: ["Yes Bank", "2025-09"],
+  okaxis: ["Axis Bank", "2017-09"],
+  okhdfcbank: ["HDFC Bank", "2017-09"],
+  okicici: ["ICICI Bank", "2017-09"],
+  oksbi: ["State Bank of India", "2017-09"],
+  oneyes: ["Yes Bank", "2024-09"],
+  paytm: ["Yes Bank", "2024-03"],
+  pingpay: ["Axis Bank", "2018-02"],
+  pnyes: ["Yes Bank", "2025-10"],
+  ptaxis: ["Axis Bank", "2024-03"],
+  pthdfc: ["HDFC Bank", "2024-03"],
+  ptsbi: ["State Bank of India", "2024-03"],
+  ptyes: ["Yes Bank", "2024-03"],
+  rapl: ["RBL Bank", "2019-01"],
+  rfunity: ["Unity Small Finance Bank", "2026-08"],
+  rmrbl: ["RBL Bank", "2024-11"],
+  rpaxis: ["Axis Bank", "2025-12"],
+  seyes: ["Yes Bank", "2024-07"],
+  sfunity: ["Unity Small Finance Bank", "2026-02"],
+  shriramhdfcbank: ["HDFC Bank", "2023-09"],
+  smyes: ["Yes Bank", "2026-03"],
+  superyes: ["Yes Bank", "2024-06"],
+  tapicici: ["ICICI Bank", "2022-04"],
+  timecosmos: ["Cosmos Co-operative Bank", "2021-08"],
+  tlaxis: ["Axis Bank", "2025-12"],
+  tnaxis: ["Axis Bank", "2026-04"],
+  waaxis: ["Axis Bank", "2020-11"],
+  wahdfcbank: ["HDFC Bank", "2020-11"],
+  waicici: ["ICICI Bank", "2020-11"],
+  wasbi: ["State Bank of India", "2020-11"],
+  yapl: ["Yes Bank", "2019-01"],
+  ybl: ["Yes Bank", "2016-08"],
+  yescred: ["Yes Bank", "2019-04"],
+  yescurie: ["Yes Bank", "2024-11"],
+  yesfam: ["Yes Bank", "2024-05"],
+  yesg: ["Yes Bank", "2022-10"],
+  yespop: ["Yes Bank", "2024-06"],
+  ztrbl: ["RBL Bank", "2025-12"],
+  // #endregion
+};
+
+/** What the package knows about one handle. */
+export type UpiHandleInfo = {
+  /** Lowercase, without the `@`. */
+  handle: string;
+  /** `null` for EXCLUDED_HANDLES: a real handle, but not one app's. */
+  appId: UpiAppId | null;
+  /** The PSP bank NPCI lists for the handle, or `null` for handles NPCI doesn't list. */
+  pspBank: string | null;
+  /** NPCI's go-live month as `YYYY-MM`, or `null` alongside a null `pspBank`. */
+  goLive: string | null;
+};
+
+function toHandleInfo(handle: string): UpiHandleInfo {
+  const psp = HANDLE_PSP[handle];
+  return {
+    handle,
+    appId: HANDLE_TO_APP[handle] ?? null,
+    pspBank: psp?.[0] ?? null,
+    goLive: psp?.[1] ?? null,
+  };
+}
+
+/**
+ * Every handle the package has anything to say about: KNOWN_HANDLES followed
+ * by EXCLUDED_HANDLES, so a directory of handles can explain the bank-generic
+ * ones instead of leaving them out.
+ */
+export const UPI_HANDLES: readonly UpiHandleInfo[] = [
+  ...KNOWN_HANDLES,
+  ...EXCLUDED_HANDLES,
+].map(toHandleInfo);
+
+/**
+ * Details for one handle, given a full VPA (`someone@ybl`), `@ybl`, or a bare
+ * `ybl`. Unlike `detectUpiApp`, a string with no `@` is read as the handle
+ * itself, since "what is ybl" is how people ask. Returns `null` for a handle
+ * the package doesn't know.
+ */
+export function getUpiHandleInfo(upiIdOrHandle: string): UpiHandleInfo | null {
+  const handle = upiIdOrHandle
+    .slice(upiIdOrHandle.lastIndexOf("@") + 1)
+    .trim()
+    .toLowerCase();
+  if (!handle) return null;
+  if (!(handle in HANDLE_TO_APP) && !EXCLUDED_HANDLES.includes(handle)) {
+    return null;
+  }
+  return toHandleInfo(handle);
 }

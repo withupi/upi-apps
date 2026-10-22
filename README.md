@@ -106,19 +106,21 @@ QR is generated per render.
 
 ## API
 
-| Export                                                            | What it does                                                    |
-| ----------------------------------------------------------------- | --------------------------------------------------------------- |
-| `detectUpiApp(vpa)`                                               | `UpiAppId` or `"unknown"`, from the handle after `@`.           |
-| `UPI_APP_LABELS`                                                  | Display name for every `UpiAppId`.                              |
-| `KNOWN_HANDLES`                                                   | Every handle the package recognises.                            |
-| `EXCLUDED_HANDLES`                                                | Handles deliberately left unmapped, and why (see below).        |
-| `getUpiAppTargets(platform, { includeUnverified })`               | Apps openable on `"ios"` / `"android"`; `"other"` returns `[]`. |
-| `isUpiAppTargetEstablished(appId, platform)`                      | Whether one app's target on that platform is confirmed.         |
-| `buildUpiAppLink({ appId, platform, request, fallbackUrl })`      | Best link for one app, or `undefined`.                          |
-| `buildUpiUri(request)`                                            | The plain `upi://pay` URI, for QR codes.                        |
-| `buildAndroidIntentUri(request, { androidPackage, fallbackUrl })` | An `intent://` URI, optionally pinned to a package.             |
-| `getUpiAppIosScheme(appId)` / `getUpiAppAndroidPackage(appId)`    | Raw target values, for building a native intent yourself.       |
-| `sanitizeTransactionNote(note)`, `UPI_NOTE_MAX_LENGTH`            | Strip characters UPI apps reject from `tn`.                     |
+| Export                                                            | What it does                                                     |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `detectUpiApp(vpa)`                                               | `UpiAppId` or `"unknown"`, from the handle after `@`.            |
+| `UPI_APP_LABELS`                                                  | Display name for every `UpiAppId`.                               |
+| `KNOWN_HANDLES`                                                   | Every handle the package recognises.                             |
+| `EXCLUDED_HANDLES`                                                | Handles deliberately left unmapped, and why (see below).         |
+| `UPI_HANDLES`                                                     | App, PSP bank and go-live month for every known/excluded handle. |
+| `getUpiHandleInfo(vpaOrHandle)`                                   | That record for one VPA, `@handle` or bare handle, or `null`.    |
+| `getUpiAppTargets(platform, { includeUnverified })`               | Apps openable on `"ios"` / `"android"`; `"other"` returns `[]`.  |
+| `isUpiAppTargetEstablished(appId, platform)`                      | Whether one app's target on that platform is confirmed.          |
+| `buildUpiAppLink({ appId, platform, request, fallbackUrl })`      | Best link for one app, or `undefined`.                           |
+| `buildUpiUri(request)`                                            | The plain `upi://pay` URI, for QR codes.                         |
+| `buildAndroidIntentUri(request, { androidPackage, fallbackUrl })` | An `intent://` URI, optionally pinned to a package.              |
+| `getUpiAppIosScheme(appId)` / `getUpiAppAndroidPackage(appId)`    | Raw target values, for building a native intent yourself.        |
+| `sanitizeTransactionNote(note)`, `UPI_NOTE_MAX_LENGTH`            | Strip characters UPI apps reject from `tn`.                      |
 
 `@withupi/upi-apps/targets.json` exports the raw target table for build-time
 tooling that cannot run the TypeScript. Expo config plugins that generate

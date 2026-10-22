@@ -22,9 +22,12 @@
 export {
   detectUpiApp,
   EXCLUDED_HANDLES,
+  getUpiHandleInfo,
   KNOWN_HANDLES,
   UPI_APP_LABELS,
+  UPI_HANDLES,
   type UpiAppId,
+  type UpiHandleInfo,
 } from "./apps";
 
 export {
