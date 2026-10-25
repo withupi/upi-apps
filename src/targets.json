@@ -55,9 +55,9 @@
     },
     "bhim": {
       "androidPackage": "in.org.npci.upiapp",
-      "androidConfidence": "established",
+      "androidConfidence": "unverified",
       "iosScheme": "bhim://upi/pay",
-      "iosConfidence": "established"
+      "iosConfidence": "unverified"
     },
     "cred": {
       "androidPackage": "com.dreamplug.androidapp",

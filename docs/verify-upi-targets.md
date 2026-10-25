@@ -91,6 +91,33 @@ Package names also have to be declared in your manifest's `<queries>` (Android
 though `adb` succeeds. If you generate `<queries>` from this table, regenerate
 and rebuild before doubting a package name.
 
+## Demoted: BHIM (2026-10-25)
+
+BHIM 4.0.30 stopped accepting payment links to personal VPAs on both
+platforms, so both of its values went back to `unverified`. The scheme and
+package are kept: they are still the right values, and a future BHIM release
+may accept these links again.
+
+- **iOS.** `bhim://upi/pay`, `bhim://pay` and `upi://pay` all open BHIM, which
+  parses the payee and amount, then shows "This request type is not supported".
+  This happened with the payer's own VPA, someone else's, a bare `pa` with no
+  other params, and with `mc=0000` or `mode`/`purpose` added. A merchant VPA
+  (a BharatPe `@unitype` sticker QR, unsigned, no amount) opened a normal
+  payment screen through the same `upi://pay` link. So the gate is the payee
+  being a merchant, not the scheme, the params or a signature, and nothing a
+  P2P link can carry gets past it.
+- **Android.** BHIM declares a `upi://pay` filter on `IntentRegistrationActivity`
+  but disables that component at runtime (`dumpsys package in.org.npci.upiapp`
+  lists it under `disabledComponents`). The intent then resolves to nothing, even
+  with `-p in.org.npci.upiapp`, and BHIM is missing from the system chooser for
+  `upi://` links, from Chrome as well as from apps, including after onboarding.
+  BHIM also refuses to start while developer options are on, so test it with
+  them off and read component state over `adb` afterwards, without opening the
+  app.
+
+To re-promote, a link to a personal VPA has to reach a filled-in payment screen
+on each platform separately, per "What "passes" means" above.
+
 ## Open questions as of 2026-09-12
 
 - **Super Money's iOS scheme is confirmed**: `super://pay?pa=...&pn=...&am=...&cu=INR`
