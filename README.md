@@ -165,7 +165,7 @@ Current status, generated from `src/targets.json` by `pnpm docs:status`:
 | ------------ | -------------- | -------------- |
 | Amazon Pay   | ✅ Established | ✅ Established |
 | BharatPe     | ⚠️ Unverified  | —              |
-| BHIM         | ✅ Established | ✅ Established |
+| BHIM         | ⚠️ Unverified  | ⚠️ Unverified  |
 | CRED         | ✅ Established | ✅ Established |
 | FamPay       | ⚠️ Unverified  | ✅ Established |
 | Flipkart UPI | ⚠️ Unverified  | ✅ Established |
